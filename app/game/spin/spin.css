@@ -1,0 +1,114 @@
+.app-full {
+  /* Integrate with app background; remove full-page gradient */
+  background: transparent;
+}
+.app-content {
+  border: 1px solid hsl(var(--border));
+  background: var(--background);
+}
+.logo {
+  height: 40px;
+}
+.logo-large {
+  height: 56px;
+}
+.header-title {
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: hsl(var(--foreground));
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 260px 1fr 320px;
+  }
+}
+.left-panel,
+.right-panel {
+  background: var(--background);
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 12px;
+}
+.center-panel {
+  background: var(--background);
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 12px;
+}
+.table-scroll {
+  max-height: 360px;
+  overflow: auto;
+}
+.names-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.names-table th,
+.names-table td {
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 6px 8px;
+}
+.names-table tr.selected {
+  background: hsla(var(--primary), 0.08);
+}
+.muted {
+  color: hsl(var(--muted-foreground));
+}
+.pointer {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 16px solid #ef4444;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+.wheel {
+  will-change: transform;
+}
+.wheel svg {
+  max-width: 100%;
+  height: auto;
+}
+.center-circle {
+  fill: #e2e8f0;
+  stroke: #fff;
+  stroke-width: 6;
+}
+.btn {
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background: var(--background);
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+.btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: transparent;
+}
+.btn-muted {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border-color: transparent;
+}
+.bg-overlay {
+  background: rgba(2, 6, 23, 0.6);
+}
+
+/* Responsive tweaks: shrink wheel on small screens */
+@media (max-width: 640px) {
+  .table-scroll {
+    max-height: 240px;
+  }
+  .pointer {
+    border-left-width: 8px;
+    border-right-width: 8px;
+    border-bottom-width: 14px;
+  }
+}

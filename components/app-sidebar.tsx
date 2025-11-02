@@ -6,7 +6,6 @@ import {
   IconCheckupList,
   IconDashboard,
   IconDatabase,
-  IconFingerprint,
   IconHelp,
   IconInnerShadowTop,
   IconReport,
@@ -42,6 +41,11 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "Spin Game",
+      url: "/game/spin",
+      icon: IconReport,
+    },
+    {
       title: "Reservations",
       url: "/admin/reservations",
       icon: IconCheckupList,
@@ -50,11 +54,6 @@ const data = {
       title: "Create Organizer",
       url: "/admin/organizers/create",
       icon: IconUserPlus,
-    },
-    {
-      title: "Organizer Login",
-      url: "/organizer/login",
-      icon: IconFingerprint,
     },
     {
       title: "Organizer Scan",
@@ -106,7 +105,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href='#'>
                 <IconInnerShadowTop className='!size-5' />
-                <span className='text-base font-semibold'>Act Dev Community</span>
+                <span className='text-base font-semibold'>
+                  Act Dev Community
+                </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
