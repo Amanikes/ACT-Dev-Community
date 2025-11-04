@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     if (backendUrl) {
       // Forward to mark attendance according to Swagger
       // Try to coerce a studentId from the scanned data

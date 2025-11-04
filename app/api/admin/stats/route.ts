@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 export async function GET() {
   try {
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     if (backendUrl) {
       const url = new URL("/admin/dashboard-stats", backendUrl).toString();
       const cookieStore = await cookies();

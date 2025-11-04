@@ -15,14 +15,15 @@ import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(6, "Minimum 6 characters"),
+  username: z.string().min(2, "Enter a valid username"),
+  // No length limits for password; send as provided
+  password: z.string(),
 });
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const search = useSearchParams();
-  const [form, setForm] = React.useState({ email: "", password: "" });
+  const [form, setForm] = React.useState({ username: "", password: "" });
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
@@ -66,16 +67,15 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={onSubmit} className='space-y-4'>
             <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
+              <Label htmlFor='username'>Username</Label>
               <Input
-                id='email'
-                type='email'
-                autoComplete='email'
-                value={form.email}
+                id='username'
+                autoComplete='username'
+                value={form.username}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, email: e.target.value }))
+                  setForm((f) => ({ ...f, username: e.target.value }))
                 }
-                placeholder='admin@example.com'
+                placeholder='admin1'
                 required
               />
             </div>

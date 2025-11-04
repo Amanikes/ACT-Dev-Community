@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status") ?? undefined;
 
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     if (backendUrl) {
       const url = new URL("/admin/reservations", backendUrl);
       if (status) url.searchParams.set("status", status);

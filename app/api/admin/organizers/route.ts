@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     if (backendUrl) {
       const url = new URL("/admin/create-organizer", backendUrl).toString();
       const cookieStore = await cookies();

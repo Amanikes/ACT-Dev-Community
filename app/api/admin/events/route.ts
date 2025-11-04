@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     const url = new URL("/admin/events", backendUrl).toString();
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;

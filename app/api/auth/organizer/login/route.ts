@@ -6,7 +6,8 @@ export async function POST(req: NextRequest) {
     const email = raw?.email as string | undefined;
     const username = (raw?.username as string | undefined) ?? email;
     const password = raw?.password as string | undefined;
-    if (!username || !password) {
+    // Require a username; allow any password string (including empty)
+    if (!username || typeof password === "undefined") {
       return NextResponse.json(
         { error: "Missing username/email or password" },
         { status: 400 }
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const backendUrl =
-      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com";
     if (backendUrl) {
       const url = new URL("/organizer/login", backendUrl).toString();
       const res = await fetch(url, {
