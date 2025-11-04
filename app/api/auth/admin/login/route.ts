@@ -2,21 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
-    if (!email || !password) {
+    const raw = await req.json();
+    const email = raw?.email as string | undefined;
+    const username = (raw?.username as string | undefined) ?? email;
+    const password = raw?.password as string | undefined;
+    if (!username || !password) {
       return NextResponse.json(
-        { error: "Missing email or password" },
+        { error: "Missing username/email or password" },
         { status: 400 }
       );
     }
 
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl =
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
     if (backendUrl) {
-      const url = new URL("/auth/admin/login", backendUrl).toString();
+      const url = new URL("/admin/login", backendUrl).toString();
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
       const text = await res.text();
       if (!res.ok) {
@@ -27,9 +31,24 @@ export async function POST(req: NextRequest) {
       }
       try {
         const json = JSON.parse(text);
-        return NextResponse.json({ ok: true, ...json });
+        const token: string | undefined = (json &&
+          (json.accessToken || json.token)) as string | undefined;
+        const response = NextResponse.json({ ok: true, ...json });
+        if (token) {
+          response.cookies.set({
+            name: "token",
+            value: token,
+            httpOnly: true,
+            sameSite: "lax",
+            secure: true,
+            path: "/",
+            maxAge: 60 * 60, // 1h
+          });
+        }
+        return response;
       } catch {
-        return NextResponse.json({ ok: true, message: text });
+        const response = NextResponse.json({ ok: true, message: text });
+        return response;
       }
     }
 

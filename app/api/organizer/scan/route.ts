@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,14 +12,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl =
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
     if (backendUrl) {
-      // Forward to your backend
-      const res = await fetch(new URL("/scan", backendUrl).toString(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
-      });
+      // Forward to mark attendance according to Swagger
+      // Try to coerce a studentId from the scanned data
+      const parsedId = Number(String(data).trim());
+      const body = Number.isFinite(parsedId)
+        ? { studentId: parsedId }
+        : { studentId: String(data) };
+      const cookieStore = await cookies();
+      const token = cookieStore.get("token")?.value;
+      const res = await fetch(
+        new URL("/organizer/mark-attendance", backendUrl).toString(),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(body),
+        }
+      );
       const text = await res.text();
       if (!res.ok) {
         return NextResponse.json(

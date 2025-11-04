@@ -41,6 +41,11 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "Create Event",
+      url: "/admin/events/create",
+      icon: IconReport,
+    },
+    {
       title: "Spin Game",
       url: "/game/spin",
       icon: IconReport,

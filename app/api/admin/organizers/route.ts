@@ -1,23 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password } = body || {};
-    if (!name || !email || !password) {
+    // Align to Swagger: username + password
+    const username = body?.username ?? body?.email ?? body?.name;
+    const { password } = body || {};
+    if (!username || !password) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl =
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
     if (backendUrl) {
-      const url = new URL("/admin/organizers", backendUrl).toString();
+      const url = new URL("/admin/create-organizer", backendUrl).toString();
+      const cookieStore = await cookies();
+      const token = cookieStore.get("token")?.value;
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ username, password }),
       });
       const text = await res.text();
       if (!res.ok) {
@@ -35,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Dev fallback: fake success
-    return NextResponse.json({ ok: true, id: "org_123", name, email });
+    return NextResponse.json({ ok: true, id: "org_123", username });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

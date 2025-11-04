@@ -51,7 +51,7 @@ export default function SpinGame() {
     setWinner(null);
     setSpinning(true);
 
-    spinSound.current?.play();
+    spinSound.current?.play().catch(() => {});
 
     const fullRotations = randInt(6, 9);
     // visual landing on wheel (keeps the original behavior)
@@ -83,7 +83,7 @@ export default function SpinGame() {
       // push to selectedNames (most recent first), keep max 10
       setSelectedNames((prev) => [chosen, ...prev].slice(0, 10));
       setWinner(chosen);
-      winnerSound.current?.play();
+      winnerSound.current?.play().catch(() => {});
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       wheel.removeEventListener("transitionend", onTransitionEnd);
     };

@@ -5,21 +5,21 @@ import { z } from "zod";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 const schema = z.object({
-  username: z.string().min(2, "Username is required"),
-  password: z.string().min(6, "Minimum 6 characters"),
+  eventName: z.string().min(2, "Event name is required"),
+  eventDate: z.string().min(4, "Event date is required"),
 });
 
-export default function CreateOrganizerPage() {
-  const [form, setForm] = React.useState({ username: "", password: "" });
+export default function CreateEventPage() {
+  const [form, setForm] = React.useState({ eventName: "", eventDate: "" });
   const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -35,18 +35,16 @@ export default function CreateOrganizerPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/organizers", {
+      const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
       if (!res.ok) throw new Error(await res.text());
-      setOk("Organizer created.");
-      setForm({ username: "", password: "" });
+      setOk("Event created.");
+      setForm({ eventName: "", eventDate: "" });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create organizer"
-      );
+      setError(err instanceof Error ? err.message : "Failed to create event");
     } finally {
       setLoading(false);
     }
@@ -56,31 +54,31 @@ export default function CreateOrganizerPage() {
     <div className='p-6'>
       <Card className='max-w-xl'>
         <CardHeader>
-          <CardTitle>Create Organizer</CardTitle>
+          <CardTitle>Create Event</CardTitle>
           <CardDescription>
-            Create a new organizer account with username and password.
+            Create a new event (previous active will be deactivated).
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className='space-y-4'>
             <div className='space-y-2'>
-              <Label htmlFor='username'>Username</Label>
+              <Label htmlFor='eventName'>Event Name</Label>
               <Input
-                id='username'
-                value={form.username}
+                id='eventName'
+                value={form.eventName}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, username: e.target.value }))
+                  setForm((f) => ({ ...f, eventName: e.target.value }))
                 }
               />
             </div>
             <div className='space-y-2'>
-              <Label htmlFor='password'>Password</Label>
+              <Label htmlFor='eventDate'>Event Date</Label>
               <Input
-                id='password'
-                type='password'
-                value={form.password}
+                id='eventDate'
+                placeholder='YYYY-MM-DD'
+                value={form.eventDate}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, password: e.target.value }))
+                  setForm((f) => ({ ...f, eventDate: e.target.value }))
                 }
               />
             </div>

@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET() {
   try {
-    const backendUrl = process.env.BACKEND_URL;
+    const backendUrl =
+      process.env.BACKEND_URL ?? "https://act-dev.onrender.com/api";
     if (backendUrl) {
-      const url = new URL("/admin/stats", backendUrl).toString();
-      const res = await fetch(url, { next: { revalidate: 0 } });
+      const url = new URL("/admin/dashboard-stats", backendUrl).toString();
+      const cookieStore = await cookies();
+      const token = cookieStore.get("token")?.value;
+      const res = await fetch(url, {
+        next: { revalidate: 0 },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       const text = await res.text();
       if (!res.ok) {
         return NextResponse.json(
