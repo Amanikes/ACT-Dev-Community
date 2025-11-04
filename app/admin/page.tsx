@@ -10,7 +10,8 @@ type Stats = {
   upcomingEvents: number;
   activeReservations: number;
   totalRegisteredUsers: number;
-  allUsers: number;
+  // Backend may return an array of users; show the count in the UI
+  allUsers: number | unknown[];
 };
 
 export default function AdminHome() {
@@ -56,7 +57,14 @@ export default function AdminHome() {
           title='Total registered users'
           value={stats?.totalRegisteredUsers}
         />
-        <StatCard title='All users' value={stats?.allUsers} />
+        <StatCard
+          title='All users'
+          value={
+            Array.isArray(stats?.allUsers)
+              ? (stats!.allUsers as unknown[]).length
+              : (stats?.allUsers as number | undefined)
+          }
+        />
       </div>
 
       <div className='mt-8'>
