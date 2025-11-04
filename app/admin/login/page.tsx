@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -21,6 +21,7 @@ const schema = z.object({
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const search = useSearchParams();
   const [form, setForm] = React.useState({ email: "", password: "" });
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -45,8 +46,8 @@ export default function AdminLoginPage() {
         const text = await res.text();
         throw new Error(text || `Login failed (${res.status})`);
       }
-      // On success, go to admin home placeholder.
-      router.push("/admin");
+      const next = search.get("next");
+      router.push(next || "/admin");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Login failed";
       setError(msg);
