@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 const QrScanner = dynamic(() => import("@/components/qr-scanner").then((m) => m.QrScanner), { ssr: false });
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function OrganizerScanPage() {
   const [status, setStatus] = React.useState<
@@ -19,15 +20,22 @@ export default function OrganizerScanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data }),
       });
+      const text = await res.text();
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Request failed with ${res.status}`);
+        toast.error(text || `Scan failed (${res.status})`);
+        throw new Error(text || `Scan failed (${res.status})`);
       }
-      const json = await res.json().catch(() => ({}));
-      setStatus({ kind: "success", message: json?.message || "Submitted" });
+      let msg = "Submitted";
+      try {
+        const json = JSON.parse(text);
+        msg = json?.message || msg;
+      } catch {}
+      setStatus({ kind: "success", message: msg });
+      toast.success(msg);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to submit";
       setStatus({ kind: "error", message, data });
+      toast.error(message);
     }
   };
 

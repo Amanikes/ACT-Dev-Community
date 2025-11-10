@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { jsonFetch } from "@/lib/safe-fetch";
 
 const schema = z.object({
   username: z.string().min(2, "Enter a valid username"),
@@ -32,20 +34,19 @@ function AdminLoginForm() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/admin/login", {
+      await jsonFetch("/api/auth/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
+        allowEmpty: true,
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Login failed (${res.status})`);
-      }
+      toast.success("Logged in successfully");
       const next = search.get("next");
       router.push(next || "/admin");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Login failed";
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,13 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <React.Suspense fallback={<div className='p-6 text-sm' role="status" aria-live="polite">Loading…</div>}>
+    <React.Suspense
+      fallback={
+        <div className='p-6 text-sm' role='status' aria-live='polite'>
+          Loading…
+        </div>
+      }
+    >
       <AdminLoginForm />
     </React.Suspense>
   );
