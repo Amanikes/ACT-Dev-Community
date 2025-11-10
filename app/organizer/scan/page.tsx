@@ -1,23 +1,14 @@
 "use client";
 
 import React from "react";
-import { QrScanner } from "@/components/qr-scanner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import dynamic from "next/dynamic";
+const QrScanner = dynamic(() => import("@/components/qr-scanner").then((m) => m.QrScanner), { ssr: false });
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function OrganizerScanPage() {
   const [status, setStatus] = React.useState<
-    | { kind: "idle" }
-    | { kind: "scanned"; data: string }
-    | { kind: "sending"; data: string }
-    | { kind: "success"; message: string }
-    | { kind: "error"; message: string; data?: string }
+    { kind: "idle" } | { kind: "scanned"; data: string } | { kind: "sending"; data: string } | { kind: "success"; message: string } | { kind: "error"; message: string; data?: string }
   >({ kind: "idle" });
 
   const handleDetected = async (data: string) => {
@@ -45,10 +36,7 @@ export default function OrganizerScanPage() {
       <Card>
         <CardHeader>
           <CardTitle>Organizer QR Scan</CardTitle>
-          <CardDescription>
-            Scan a participant QR code. We’ll send the scanned data to the
-            backend.
-          </CardDescription>
+          <CardDescription>Scan a participant QR code. We’ll send the scanned data to the backend.</CardDescription>
         </CardHeader>
         <CardContent>
           <QrScanner
@@ -61,33 +49,20 @@ export default function OrganizerScanPage() {
 
           <div className='mt-4 space-y-2 text-sm'>
             {status.kind === "idle" && <p>Waiting for a QR code…</p>}
-            {status.kind === "scanned" && (
-              <p className='text-muted-foreground'>Scanned: {status.data}</p>
-            )}
-            {status.kind === "sending" && (
-              <p className='text-muted-foreground'>Submitting…</p>
-            )}
-            {status.kind === "success" && (
-              <p className='text-green-600'>{status.message}</p>
-            )}
+            {status.kind === "scanned" && <p className='text-muted-foreground'>Scanned: {status.data}</p>}
+            {status.kind === "sending" && <p className='text-muted-foreground'>Submitting…</p>}
+            {status.kind === "success" && <p className='text-green-600'>{status.message}</p>}
             {status.kind === "error" && (
               <div>
                 <p className='text-red-600'>{status.message}</p>
                 {status.data && (
                   <details className='mt-1'>
-                    <summary className='cursor-pointer'>
-                      Show scanned data
-                    </summary>
-                    <pre className='overflow-auto rounded bg-muted p-2 text-xs'>
-                      {status.data}
-                    </pre>
+                    <summary className='cursor-pointer'>Show scanned data</summary>
+                    <pre className='overflow-auto rounded bg-muted p-2 text-xs'>{status.data}</pre>
                   </details>
                 )}
                 <div className='mt-2'>
-                  <Button
-                    variant='outline'
-                    onClick={() => setStatus({ kind: "idle" })}
-                  >
+                  <Button variant='outline' onClick={() => setStatus({ kind: "idle" })}>
                     Try again
                   </Button>
                 </div>

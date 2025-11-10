@@ -14,7 +14,7 @@ const schema = z.object({
   password: z.string(),
 });
 
-function OrganizerLoginInner() {
+function OrganizerLoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const [form, setForm] = React.useState({ username: "", password: "" });
@@ -89,8 +89,14 @@ function OrganizerLoginInner() {
 
 export default function OrganizerLoginPage() {
   return (
-    <React.Suspense fallback={<div className='p-6 text-sm'>Loading…</div>}>
-      <OrganizerLoginInner />
+    <React.Suspense
+      fallback={
+        <div className='p-6 text-sm' role='status' aria-live='polite'>
+          Loading…
+        </div>
+      }
+    >
+      <OrganizerLoginForm />
     </React.Suspense>
   );
 }

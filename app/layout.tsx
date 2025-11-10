@@ -12,7 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Safely construct metadataBase URL with validation
+let metadataBase: URL;
+try {
+  metadataBase = new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
+} catch {
+  metadataBase = new URL("http://localhost:3000");
+}
+
 export const metadata: Metadata = {
+  metadataBase,
   title: {
     default: "ACT DEV Community",
     template: "%s | ACT DEV Community",

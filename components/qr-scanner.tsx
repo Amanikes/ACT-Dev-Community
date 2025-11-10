@@ -9,9 +9,7 @@ type BarcodeDetectorLike = {
 };
 declare global {
   interface Window {
-    BarcodeDetector?: new (opts?: {
-      formats?: string[];
-    }) => BarcodeDetectorLike;
+    BarcodeDetector?: new (opts?: { formats?: string[] }) => BarcodeDetectorLike;
   }
 }
 
@@ -23,9 +21,7 @@ type QrScannerProps = {
 
 export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
-  const [permissionState, setPermissionState] = React.useState<
-    "prompt" | "granted" | "denied" | "unknown"
-  >("unknown");
+  const [permissionState, setPermissionState] = React.useState<"prompt" | "granted" | "denied" | "unknown">("unknown");
   const [isScanning, setIsScanning] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [cameraAvailable, setCameraAvailable] = React.useState<boolean>(true);
@@ -43,8 +39,7 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
         // Require secure context for camera on mobile browsers.
         if (!window.isSecureContext && location.hostname !== "localhost") {
           setCameraAvailable(false);
-          const msg =
-            "Camera access requires HTTPS on mobile. Open this page over HTTPS or use localhost during development.";
+          const msg = "Camera access requires HTTPS on mobile. Open this page over HTTPS or use localhost during development.";
           setError(msg);
           onError?.(msg);
           // Don't attempt getUserMedia; still allow image upload fallback below.
@@ -53,9 +48,7 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
         // Check camera permission state if available
         const permNavigator = navigator as Navigator & {
           permissions?: {
-            query: (opts: {
-              name: PermissionName;
-            }) => Promise<PermissionStatus>;
+            query: (opts: { name: PermissionName }) => Promise<PermissionStatus>;
           };
         };
         if (permNavigator.permissions?.query) {
@@ -65,8 +58,7 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
             });
             if (!cancelled) {
               setPermissionState(status.state as typeof permissionState);
-              status.onchange = () =>
-                setPermissionState(status.state as typeof permissionState);
+              status.onchange = () => setPermissionState(status.state as typeof permissionState);
             }
           } catch {
             // ignore if not supported
@@ -75,10 +67,7 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
 
         // Request camera stream (prefer environment/back camera on mobile)
         if (cameraAvailable) {
-          if (
-            !navigator.mediaDevices ||
-            typeof navigator.mediaDevices.getUserMedia !== "function"
-          ) {
+          if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
             // mediaDevices not available (likely due to insecure context or unsupported browser)
             setCameraAvailable(false);
           } else {
@@ -103,14 +92,12 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
             startLoop();
           }
         } else {
-          const msg =
-            "BarcodeDetector API not supported in this browser. Try Chrome/Edge or update your browser.";
+          const msg = "BarcodeDetector API not supported in this browser. Try Chrome/Edge or update your browser.";
           setError(msg);
           onError?.(msg);
         }
       } catch (err: unknown) {
-        const msg =
-          err instanceof Error ? err.message : "Failed to access camera";
+        const msg = err instanceof Error ? err.message : "Failed to access camera";
         setError(msg);
         onError?.(msg);
       }
@@ -122,12 +109,8 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
         if (!isScanning || !videoRef.current || !detectorRef.current) return;
         try {
           // The detect() method accepts an ImageBitmapSource. Video element is valid input.
-          const codes: BarcodeResult[] = await detectorRef.current.detect(
-            videoRef.current
-          );
-          const qr = (codes || []).find(
-            (c: BarcodeResult) => c.format === "qr_code"
-          );
+          const codes: BarcodeResult[] = await detectorRef.current.detect(videoRef.current);
+          const qr = (codes || []).find((c: BarcodeResult) => c.format === "qr_code");
           if (qr && typeof qr.rawValue === "string" && qr.rawValue.length > 0) {
             setIsScanning(false);
             onDetected(qr.rawValue);
@@ -160,27 +143,18 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const secureContext = typeof window !== "undefined" ? window.isSecureContext : false;
+
   return (
     <div className={className}>
-      <div className='mb-3 text-sm text-muted-foreground'>
-        Camera permission: {permissionState}
-      </div>
+      <div className='mb-3 text-sm text-muted-foreground'>Camera permission: {permissionState}</div>
       {cameraAvailable ? (
         <div className='relative w-full overflow-hidden rounded-lg border bg-black'>
-          <video
-            ref={videoRef}
-            className='block h-[320px] w-full object-contain'
-            playsInline
-            muted
-            autoPlay
-          />
+          <video ref={videoRef} className='block h-[320px] w-full object-contain' playsInline muted autoPlay />
         </div>
       ) : (
         <div className='rounded-lg border p-4'>
-          <p className='mb-2 text-sm text-muted-foreground'>
-            Live camera is unavailable in this context. You can still scan by
-            taking or uploading a photo of the QR code.
-          </p>
+          <p className='mb-2 text-sm text-muted-foreground'>Live camera is unavailable in this context. You can still scan by taking or uploading a photo of the QR code.</p>
           <input
             ref={fileInputRef}
             type='file'
@@ -191,34 +165,22 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
               if (!file) return;
               try {
                 if (!detectorRef.current) {
-                  const msg =
-                    "BarcodeDetector not supported for image scanning.";
+                  const msg = "BarcodeDetector not supported for image scanning.";
                   setError(msg);
                   onError?.(msg);
                   return;
                 }
                 const bitmap = await createImageBitmap(file);
-                const codes: BarcodeResult[] = await detectorRef.current.detect(
-                  bitmap
-                );
-                const qr = (codes || []).find(
-                  (c: BarcodeResult) => c.format === "qr_code"
-                );
-                if (
-                  qr &&
-                  typeof qr.rawValue === "string" &&
-                  qr.rawValue.length > 0
-                ) {
+                const codes: BarcodeResult[] = await detectorRef.current.detect(bitmap);
+                const qr = (codes || []).find((c: BarcodeResult) => c.format === "qr_code");
+                if (qr && typeof qr.rawValue === "string" && qr.rawValue.length > 0) {
                   setIsScanning(false);
                   onDetected(qr.rawValue);
                 } else {
-                  setError(
-                    "No QR code found in the image. Try a clearer photo."
-                  );
+                  setError("No QR code found in the image. Try a clearer photo.");
                 }
               } catch (ex: unknown) {
-                const msg =
-                  ex instanceof Error ? ex.message : "Failed to scan image.";
+                const msg = ex instanceof Error ? ex.message : "Failed to scan image.";
                 setError(msg);
                 onError?.(msg);
               } finally {
@@ -229,19 +191,8 @@ export function QrScanner({ onDetected, onError, className }: QrScannerProps) {
           />
         </div>
       )}
-      {error ? (
-        <p className='mt-3 text-sm text-red-600'>{error}</p>
-      ) : (
-        <p className='mt-3 text-sm text-muted-foreground'>
-          Point your camera at a QR code to scan.
-        </p>
-      )}
-      {!window.isSecureContext && (
-        <p className='mt-2 text-xs text-muted-foreground'>
-          Tip: Use HTTPS on your phone (or connect via localhost) to enable live
-          camera access.
-        </p>
-      )}
+      {error ? <p className='mt-3 text-sm text-red-600'>{error}</p> : <p className='mt-3 text-sm text-muted-foreground'>Point your camera at a QR code to scan.</p>}
+      {!secureContext && <p className='mt-2 text-xs text-muted-foreground'>Tip: Use HTTPS on your phone (or connect via localhost) to enable live camera access.</p>}
     </div>
   );
 }

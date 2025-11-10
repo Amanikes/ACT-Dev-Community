@@ -14,7 +14,7 @@ const schema = z.object({
   password: z.string(),
 });
 
-function AdminLoginInner() {
+function AdminLoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const [form, setForm] = React.useState({ username: "", password: "" });
@@ -89,8 +89,8 @@ function AdminLoginInner() {
 
 export default function AdminLoginPage() {
   return (
-    <React.Suspense fallback={<div className='p-6 text-sm'>Loading…</div>}>
-      <AdminLoginInner />
+    <React.Suspense fallback={<div className='p-6 text-sm' role="status" aria-live="polite">Loading…</div>}>
+      <AdminLoginForm />
     </React.Suspense>
   );
 }
