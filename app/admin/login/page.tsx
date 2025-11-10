@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -20,7 +14,7 @@ const schema = z.object({
   password: z.string(),
 });
 
-export default function AdminLoginPage() {
+function AdminLoginInner() {
   const router = useRouter();
   const search = useSearchParams();
   const [form, setForm] = React.useState({ username: "", password: "" });
@@ -68,16 +62,7 @@ export default function AdminLoginPage() {
           <form onSubmit={onSubmit} className='space-y-4'>
             <div className='space-y-2'>
               <Label htmlFor='username'>Username</Label>
-              <Input
-                id='username'
-                autoComplete='username'
-                value={form.username}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, username: e.target.value }))
-                }
-                placeholder='admin1'
-                required
-              />
+              <Input id='username' autoComplete='username' value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} placeholder='admin1' required />
             </div>
             <div className='space-y-2'>
               <Label htmlFor='password'>Password</Label>
@@ -86,9 +71,7 @@ export default function AdminLoginPage() {
                 type='password'
                 autoComplete='current-password'
                 value={form.password}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, password: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 placeholder='••••••••'
                 required
               />
@@ -101,5 +84,13 @@ export default function AdminLoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <React.Suspense fallback={<div className='p-6 text-sm'>Loading…</div>}>
+      <AdminLoginInner />
+    </React.Suspense>
   );
 }

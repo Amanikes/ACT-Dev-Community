@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     shortcut: ["/act-dev-logo.png?v=2"],
   },
   applicationName: "ACT DEV Community",
-  themeColor: "#000000",
+  // themeColor moved to viewport for Next.js compatibility
   manifest: "/manifest.webmanifest",
   openGraph: {
     title: "ACT DEV Community",
@@ -52,6 +52,13 @@ export const metadata: Metadata = {
   },
 };
 
+// Provide viewport (including themeColor) per Next.js recommendation
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#000000",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,11 +66,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
