@@ -16,7 +16,7 @@ export class AppError extends Error {
     this.code = opts.code;
     this.details = opts.details;
     if (opts.cause) {
-      // @ts-ignore
+      // @ts-error
       this.cause = opts.cause;
     }
   }
