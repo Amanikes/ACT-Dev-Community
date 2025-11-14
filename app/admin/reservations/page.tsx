@@ -2,14 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type Reservation = {
   id: string;
@@ -30,17 +23,14 @@ export default function AdminReservationsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/admin/reservations?status=active", {
+        const res = await fetch("/api/admin/reservations", {
           cache: "no-store",
         });
         if (!res.ok) throw new Error(await res.text());
         const json = await res.json();
         if (!cancelled) setRows(json?.reservations || []);
       } catch (e) {
-        if (!cancelled)
-          setError(
-            e instanceof Error ? e.message : "Failed to load reservations"
-          );
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load reservations");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -75,10 +65,7 @@ export default function AdminReservationsPage() {
                 <TableBody>
                   {rows.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className='text-center text-sm text-muted-foreground'
-                      >
+                      <TableCell colSpan={5} className='text-center text-sm text-muted-foreground'>
                         No reservations found.
                       </TableCell>
                     </TableRow>
@@ -87,22 +74,14 @@ export default function AdminReservationsPage() {
                       <TableRow key={r.id}>
                         <TableCell>{r.id}</TableCell>
                         <TableCell>
-                          <div className='font-medium'>
-                            {r.eventName ?? r.eventId}
-                          </div>
+                          <div className='font-medium'>{r.eventName ?? r.eventId}</div>
                         </TableCell>
                         <TableCell>
                           <div className='font-medium'>{r.userName ?? "—"}</div>
-                          <div className='text-xs text-muted-foreground'>
-                            {r.userEmail ?? ""}
-                          </div>
+                          <div className='text-xs text-muted-foreground'>{r.userEmail ?? ""}</div>
                         </TableCell>
                         <TableCell>{r.status ?? "—"}</TableCell>
-                        <TableCell>
-                          {r.createdAt
-                            ? new Date(r.createdAt).toLocaleString()
-                            : "—"}
-                        </TableCell>
+                        <TableCell>{r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}</TableCell>
                       </TableRow>
                     ))
                   )}

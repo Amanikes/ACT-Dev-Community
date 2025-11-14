@@ -11,6 +11,13 @@ export default function OrganizerScanPage() {
   const [status, setStatus] = React.useState<
     { kind: "idle" } | { kind: "scanned"; data: string } | { kind: "sending"; data: string } | { kind: "success"; message: string } | { kind: "error"; message: string; data?: string }
   >({ kind: "idle" });
+  // Force remount of the scanner to restart camera/session
+  const [scanKey, setScanKey] = React.useState(0);
+
+  const resetScan = () => {
+    setStatus({ kind: "idle" });
+    setScanKey((k) => k + 1);
+  };
 
   const handleDetected = async (data: string) => {
     setStatus({ kind: "sending", data });
@@ -47,19 +54,30 @@ export default function OrganizerScanPage() {
           <CardDescription>Scan a participant QR code. We’ll send the scanned data to the backend.</CardDescription>
         </CardHeader>
         <CardContent>
-          <QrScanner
-            onDetected={(data) => {
-              setStatus({ kind: "scanned", data });
-              handleDetected(data);
-            }}
-            onError={(msg) => setStatus({ kind: "error", message: msg })}
-          />
+          {status.kind === "idle" && (
+            <QrScanner
+              key={scanKey}
+              onDetected={(data) => {
+                if (status.kind !== "idle") return; // guard against duplicate detections
+                setStatus({ kind: "scanned", data });
+                handleDetected(data);
+              }}
+              onError={(msg) => setStatus({ kind: "error", message: msg })}
+            />
+          )}
 
           <div className='mt-4 space-y-2 text-sm'>
             {status.kind === "idle" && <p>Waiting for a QR code…</p>}
             {status.kind === "scanned" && <p className='text-muted-foreground'>Scanned: {status.data}</p>}
             {status.kind === "sending" && <p className='text-muted-foreground'>Submitting…</p>}
-            {status.kind === "success" && <p className='text-green-600'>{status.message}</p>}
+            {status.kind === "success" && (
+              <div>
+                <p className='text-green-600'>{status.message}</p>
+                <div className='mt-2'>
+                  <Button onClick={resetScan}>Scan again</Button>
+                </div>
+              </div>
+            )}
             {status.kind === "error" && (
               <div>
                 <p className='text-red-600'>{status.message}</p>
@@ -70,8 +88,8 @@ export default function OrganizerScanPage() {
                   </details>
                 )}
                 <div className='mt-2'>
-                  <Button variant='outline' onClick={() => setStatus({ kind: "idle" })}>
-                    Try again
+                  <Button variant='outline' onClick={resetScan}>
+                    Scan again
                   </Button>
                 </div>
               </div>
