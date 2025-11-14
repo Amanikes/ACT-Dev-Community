@@ -117,7 +117,7 @@ export default function OrganizerScanPage() {
             <div className='flex items-center justify-between gap-2'>
               <p className='text-muted-foreground'>Participants collected: {participants.length}</p>
               <div className='flex gap-2'>
-                <Button variant='secondary' onClick={() => router.push("/organizer/spinner")}>
+                <Button variant='secondary' onClick={() => router.push("/game/spin")}>
                   Go to spinner game ({participants.length})
                 </Button>
                 {participants.length > 0 && (
