@@ -6,23 +6,66 @@ const QrScanner = dynamic(() => import("@/components/qr-scanner").then((m) => m.
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+// Try to extract a participant name from API response or scanned payload
+function extractNameFromPayload(responseText: string, scannedData: string): string {
+  const tryExtract = (val: unknown) => {
+    if (!val || typeof val !== "object") return null;
+    const obj = val as any;
+    const name = obj?.name ?? obj?.student?.name ?? obj?.participant?.name ?? obj?.user?.name ?? null;
+    return typeof name === "string" && name.trim() ? name.trim() : null;
+  };
+  try {
+    const json = JSON.parse(responseText);
+    const n = tryExtract(json);
+    if (n) return n;
+  } catch {}
+  try {
+    const jd = JSON.parse(scannedData);
+    const n = tryExtract(jd);
+    if (n) return n;
+  } catch {}
+  return scannedData; // fallback to raw scanned string
+}
 
 export default function OrganizerScanPage() {
+  const router = useRouter();
   const [status, setStatus] = React.useState<
     { kind: "idle" } | { kind: "scanned"; data: string } | { kind: "sending"; data: string } | { kind: "success"; message: string } | { kind: "error"; message: string; data?: string }
   >({ kind: "idle" });
-  // Force remount of the scanner to restart camera/session
   const [scanKey, setScanKey] = React.useState(0);
+
+  // Collected participants for the spinner game
+  const [participants, setParticipants] = React.useState<string[]>([]);
+
+  // Load participants from localStorage on mount
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("spinnerParticipants");
+      if (saved) setParticipants(JSON.parse(saved));
+    } catch {}
+  }, []);
+  // Persist on change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("spinnerParticipants", JSON.stringify(participants));
+    } catch {}
+  }, [participants]);
+
+  const addParticipant = (name: string) => {
+    setParticipants((prev) => (prev.includes(name) ? prev : [...prev, name]));
+  };
 
   const resetScan = () => {
     setStatus({ kind: "idle" });
-    setScanKey((k) => k + 1);
+    setScanKey((k) => k + 1); // remount scanner to restart
   };
 
   const handleDetected = async (data: string) => {
     setStatus({ kind: "sending", data });
     try {
-      const res = await fetch("/api/organizer/scan", {
+      const res = await fetch("/organizer/record-general-attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data }),
@@ -37,6 +80,10 @@ export default function OrganizerScanPage() {
         const json = JSON.parse(text);
         msg = json?.message || msg;
       } catch {}
+      // Extract a participant name and add to list
+      const name = extractNameFromPayload(text, data);
+      addParticipant(name);
+
       setStatus({ kind: "success", message: msg });
       toast.success(msg);
     } catch (e: unknown) {
@@ -66,15 +113,39 @@ export default function OrganizerScanPage() {
             />
           )}
 
-          <div className='mt-4 space-y-2 text-sm'>
+          <div className='mt-4 space-y-3 text-sm'>
+            <div className='flex items-center justify-between gap-2'>
+              <p className='text-muted-foreground'>Participants collected: {participants.length}</p>
+              <div className='flex gap-2'>
+                <Button variant='secondary' onClick={() => router.push("/organizer/spinner")}>
+                  Go to spinner game ({participants.length})
+                </Button>
+                {participants.length > 0 && (
+                  <Button
+                    variant='ghost'
+                    onClick={() => {
+                      if (confirm("Clear collected participants?")) {
+                        setParticipants([]);
+                      }
+                    }}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+
             {status.kind === "idle" && <p>Waiting for a QR code…</p>}
             {status.kind === "scanned" && <p className='text-muted-foreground'>Scanned: {status.data}</p>}
             {status.kind === "sending" && <p className='text-muted-foreground'>Submitting…</p>}
             {status.kind === "success" && (
               <div>
                 <p className='text-green-600'>{status.message}</p>
-                <div className='mt-2'>
+                <div className='mt-2 flex gap-2'>
                   <Button onClick={resetScan}>Scan again</Button>
+                  <Button variant='secondary' onClick={() => router.push("/organizer/spinner")}>
+                    Go to spinner game
+                  </Button>
                 </div>
               </div>
             )}
@@ -87,9 +158,12 @@ export default function OrganizerScanPage() {
                     <pre className='overflow-auto rounded bg-muted p-2 text-xs'>{status.data}</pre>
                   </details>
                 )}
-                <div className='mt-2'>
+                <div className='mt-2 flex gap-2'>
                   <Button variant='outline' onClick={resetScan}>
                     Scan again
+                  </Button>
+                  <Button variant='secondary' onClick={() => router.push("/organizer/spinner")}>
+                    Go to spinner game
                   </Button>
                 </div>
               </div>
