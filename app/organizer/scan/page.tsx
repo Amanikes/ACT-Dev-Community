@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-// Try to extract a participant name from API response or scanned payload
 function extractNameFromPayload(responseText: string, scannedData: string): string {
   const tryExtract = (val: unknown) => {
     if (!val || typeof val !== "object") return null;
@@ -26,7 +25,30 @@ function extractNameFromPayload(responseText: string, scannedData: string): stri
     const n = tryExtract(jd);
     if (n) return n;
   } catch {}
-  return scannedData; // fallback to raw scanned string
+  return scannedData;
+}
+
+// Try to pull a studentId from the raw scanned string.
+// Accepts: pure ID ("123"), JSON {"studentId":"123"}, JSON {"id":"123"}, or "studentId:123" pattern.
+function extractStudentId(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  // pure numeric or UUID-like string
+  if (/^[A-Za-z0-9_-]{3,}$/.test(trimmed) && !trimmed.includes("{") && !trimmed.includes(":")) {
+    return trimmed;
+  }
+  // studentId:XYZ pattern
+  const colonMatch = trimmed.match(/studentId\s*:?["']?([A-Za-z0-9_-]+)["']?/i);
+  if (colonMatch) return colonMatch[1];
+  // JSON
+  try {
+    const obj = JSON.parse(trimmed);
+    if (typeof obj === "object" && obj) {
+      if (typeof obj.studentId === "string") return obj.studentId;
+      if (typeof obj.id === "string") return obj.id;
+    }
+  } catch {}
+  return null;
 }
 
 export default function OrganizerScanPage() {
@@ -35,18 +57,14 @@ export default function OrganizerScanPage() {
     { kind: "idle" } | { kind: "scanned"; data: string } | { kind: "sending"; data: string } | { kind: "success"; message: string } | { kind: "error"; message: string; data?: string }
   >({ kind: "idle" });
   const [scanKey, setScanKey] = React.useState(0);
-
-  // Collected participants for the spinner game
   const [participants, setParticipants] = React.useState<string[]>([]);
 
-  // Load participants from localStorage on mount
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem("spinnerParticipants");
       if (saved) setParticipants(JSON.parse(saved));
     } catch {}
   }, []);
-  // Persist on change
   React.useEffect(() => {
     try {
       localStorage.setItem("spinnerParticipants", JSON.stringify(participants));
@@ -59,16 +77,22 @@ export default function OrganizerScanPage() {
 
   const resetScan = () => {
     setStatus({ kind: "idle" });
-    setScanKey((k) => k + 1); // remount scanner to restart
+    setScanKey((k) => k + 1);
   };
 
   const handleDetected = async (data: string) => {
     setStatus({ kind: "sending", data });
+    const studentId = extractStudentId(data);
+    if (!studentId) {
+      setStatus({ kind: "error", message: "studentId not found in QR", data });
+      toast.error("studentId not found");
+      return;
+    }
     try {
       const res = await fetch("/organizer/record-general-attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ studentId }),
       });
       const text = await res.text();
       if (!res.ok) {
@@ -80,10 +104,8 @@ export default function OrganizerScanPage() {
         const json = JSON.parse(text);
         msg = json?.message || msg;
       } catch {}
-      // Extract a participant name and add to list
       const name = extractNameFromPayload(text, data);
       addParticipant(name);
-
       setStatus({ kind: "success", message: msg });
       toast.success(msg);
     } catch (e: unknown) {
@@ -98,14 +120,14 @@ export default function OrganizerScanPage() {
       <Card>
         <CardHeader>
           <CardTitle>Organizer QR Scan</CardTitle>
-          <CardDescription>Scan a participant QR code. We’ll send the scanned data to the backend.</CardDescription>
+          <CardDescription>Scan a participant QR code. Sends studentId to backend.</CardDescription>
         </CardHeader>
         <CardContent>
           {status.kind === "idle" && (
             <QrScanner
               key={scanKey}
               onDetected={(data) => {
-                if (status.kind !== "idle") return; // guard against duplicate detections
+                if (status.kind !== "idle") return;
                 setStatus({ kind: "scanned", data });
                 handleDetected(data);
               }}
@@ -136,7 +158,7 @@ export default function OrganizerScanPage() {
             </div>
 
             {status.kind === "idle" && <p>Waiting for a QR code…</p>}
-            {status.kind === "scanned" && <p className='text-muted-foreground'>Scanned: {status.data}</p>}
+            {status.kind === "scanned" && <p className='text-muted-foreground'>Scanned raw: {status.data}</p>}
             {status.kind === "sending" && <p className='text-muted-foreground'>Submitting…</p>}
             {status.kind === "success" && (
               <div>
